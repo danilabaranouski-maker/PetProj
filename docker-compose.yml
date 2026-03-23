@@ -1,0 +1,57 @@
+services:
+    postgres:
+        image: postgres:16
+        container_name: postgres
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASS}
+            POSTGRES_DB: ${POSTGRES_DATABASE}
+        ports:
+          - "5432:5432"
+        volumes:
+          - postgres_data:/var/lib/postgresql/data
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        container_name: postgres_ui
+        environment: 
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASS}
+        ports: 
+          - '5050:5050'
+        depends_on:
+          - postgres
+    clickhouse:
+        image: bitnamilegacy/clickhouse:latest
+        container_name: clickhouse
+        environment:
+          - ALLOW_EMPTY_PASSWORD=yes
+        ports:
+          - '8123:8123' 
+          - '9000:9000'
+        volumes:
+          - clickhouse_data:/bitnami/clickhouse
+      
+    spark-master: 
+        image: bitnamilegacy/spark:latest
+        container_name: spark-master
+        environment:
+          - SPARK_MODE=master
+        ports:
+         - '8080:8080'
+         - '7070:7070'
+
+    spark-worker: 
+        image: bitnamilegacy/spark:latest
+        container_name: spark-worker
+        environment:
+          - SPARK_MODE=worker
+          - SPARK_MASTER_URL=spark://spark-master:7070
+          - SPARK_WORKER_MEMORY=4G
+          - SPARK_WORKER_CORES=2
+        depends_on:
+          - spark-master
+
+volumes:
+  postgres_data:
+  clickhouse_data:
+    driver: local
