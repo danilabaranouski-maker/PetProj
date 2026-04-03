@@ -1,3 +1,6 @@
+include:
+  - config-airflow.yml
+
 services:
     postgres:
         image: postgres:16
@@ -9,7 +12,7 @@ services:
         ports:
           - "5432:5432"
         volumes:
-          - postgres_data:/var/lib/postgresql/data
+          - ${POSTGRES_DATA}:/var/lib/postgresql/data
     pgadmin:
         image: dpage/pgadmin4:latest
         container_name: postgres_ui
@@ -17,7 +20,7 @@ services:
             PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
             PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASS}
         ports: 
-          - '5050:5050'
+          - '5050:80'
         depends_on:
           - postgres
     clickhouse:
@@ -29,7 +32,7 @@ services:
           - '8123:8123' 
           - '9000:9000'
         volumes:
-          - clickhouse_data:/bitnami/clickhouse
+          - ${CLICK_DATA}:/bitnami/clickhouse
       
     spark-master: 
         image: bitnamilegacy/spark:latest
@@ -46,12 +49,7 @@ services:
         environment:
           - SPARK_MODE=worker
           - SPARK_MASTER_URL=spark://spark-master:7070
-          - SPARK_WORKER_MEMORY=4G
-          - SPARK_WORKER_CORES=2
+          - SPARK_WORKER_MEMORY=${SPARK_MEM}
+          - SPARK_WORKER_CORES=${SPARK_CORE}
         depends_on:
           - spark-master
-
-volumes:
-  postgres_data:
-  clickhouse_data:
-    driver: local
