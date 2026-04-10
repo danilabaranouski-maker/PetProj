@@ -2,3 +2,15 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+data/
+*.sqlite
+*.db
+
+.env
+
+clickhouse_data/
+postgres_data/
+
+logs/
+config/
